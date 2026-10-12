@@ -7,12 +7,23 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
+  id          String    @id @default(uuid())
+  name        String
+  email       String    @unique
+  password    String
+  role        USER_ROLE @default(REPORTER)
+  picture_url String?
+
+  created_by String @default("SYSTEM")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+enum USER_ROLE {
+  ADMIN
+  APPROVER
+  REPORTER
 }

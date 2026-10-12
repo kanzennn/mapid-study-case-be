@@ -20,6 +20,8 @@ model User {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  reports Report[] @relation("ReportsByReporter")
+
   @@map("users")
 }
 
@@ -27,4 +29,26 @@ enum USER_ROLE {
   ADMIN
   APPROVER
   REPORTER
+}
+
+model Report {
+  id          String @id @default(uuid())
+  title       String
+  description String
+
+  status REPORT_STATUS @default(PENDING)
+
+  reporter_id String
+  reporter    User   @relation("ReportsByReporter", fields: [reporter_id], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("reports")
+}
+
+enum REPORT_STATUS {
+  PENDING
+  APPROVED
+  REJECTED
 }

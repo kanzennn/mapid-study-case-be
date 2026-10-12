@@ -3,17 +3,15 @@ import { logger } from '../config/logger';
 import { userRepository } from '../repositories/user.repository';
 import { AppError } from '../utils/AppError';
 import { catchAsync } from '../utils/catchAsync';
-import { verifyToken } from '../utils/jwt';
+import { extractBearerToken, verifyToken } from '../utils/jwt';
 
 export const requireAuth = catchAsync(
   async (req: Request, _res: Response, next: NextFunction) => {
-    const header = req.headers.authorization;
+    const token = extractBearerToken(req.headers.authorization);
 
-    if (!header || !header.startsWith('Bearer ')) {
+    if (!token) {
       return next(new AppError('Authentication required', 401));
     }
-
-    const token = header.split(' ')[1];
 
     let payload;
     try {

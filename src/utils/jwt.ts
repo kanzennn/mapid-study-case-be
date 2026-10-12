@@ -16,3 +16,10 @@ export const signToken = (payload: JwtPayload): string => {
 export const verifyToken = (token: string): JwtPayload => {
   return jwt.verify(token, env.JWT_SECRET) as JwtPayload;
 };
+
+export const extractBearerToken = (header?: string): string | null => {
+  if (!header || !header.startsWith('Bearer ')) {
+    return null;
+  }
+  return header.split(' ')[1];
+};

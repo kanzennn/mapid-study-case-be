@@ -1,10 +1,8 @@
-import bcrypt from 'bcrypt';
 import { userRepository } from '../repositories/user.repository';
 import { AppError } from '../utils/AppError';
+import { hashPassword } from '../utils/password';
 import { sanitizeUser } from '../utils/sanitizeUser';
 import { CreateUserInput, UpdateUserInput } from '../validations/user.validation';
-
-const SALT_ROUNDS = 10;
 
 export const userService = {
   async getAll() {
@@ -18,7 +16,7 @@ export const userService = {
       throw new AppError('Email is already in use', 409);
     }
 
-    const hashedPassword = await bcrypt.hash(input.password, SALT_ROUNDS);
+    const hashedPassword = await hashPassword(input.password);
     const user = await userRepository.create({
       name: input.name,
       email: input.email,
@@ -60,7 +58,7 @@ export const userService = {
     }
 
     if (password) {
-      data.password = await bcrypt.hash(password, SALT_ROUNDS);
+      data.password = await hashPassword(password);
     }
 
     const updated = await userRepository.update(id, data);

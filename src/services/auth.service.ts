@@ -1,27 +1,26 @@
-import bcrypt from 'bcrypt';
 import { logger } from '../config/logger';
 import { userRepository } from '../repositories/user.repository';
 import { AppError } from '../utils/AppError';
 import { signToken } from '../utils/jwt';
+import { comparePassword, hashPassword } from '../utils/password';
 import { sanitizeUser } from '../utils/sanitizeUser';
 import { LoginInput, UpdatePasswordInput, UpdateProfileInput } from '../validations/auth.validation';
-
-const SALT_ROUNDS = 10;
-
-// Precomputed bcrypt hash with no corresponding real password, used to keep
-// login response time constant whether or not the email exists.
-const DUMMY_PASSWORD_HASH = '$2b$10$1D75USUk0rQB57AcEJ0aXeToxQxc.w9oWyDT5FgFbQOfZlecE6CC.';
 
 export const authService = {
   async login(input: LoginInput) {
     const user = await userRepository.findByEmail(input.email);
 
-    const isValidPassword = await bcrypt.compare(
+    if (!user) {
+      logger.warn({ event: 'login_failed', email: input.email }, 'Login failed: invalid credentials');
+      throw new AppError('Invalid email or password', 401);
+    }
+
+    const isValidPassword = await comparePassword(
       input.password,
-      user?.password ?? DUMMY_PASSWORD_HASH,
+      user.password,
     );
 
-    if (!user || !isValidPassword) {
+    if (!isValidPassword) {
       logger.warn({ event: 'login_failed', email: input.email }, 'Login failed: invalid credentials');
       throw new AppError('Invalid email or password', 401);
     }
@@ -48,7 +47,7 @@ export const authService = {
       throw new AppError('User not found', 404);
     }
 
-    const isValidPassword = await bcrypt.compare(input.currentPassword, user.password);
+    const isValidPassword = await comparePassword(input.currentPassword, user.password);
     if (!isValidPassword) {
       throw new AppError('Current password is incorrect', 400);
     }
@@ -57,7 +56,7 @@ export const authService = {
       throw new AppError('New password must be different from the current password', 400);
     }
 
-    const hashedPassword = await bcrypt.hash(input.newPassword, SALT_ROUNDS);
+    const hashedPassword = await hashPassword(input.newPassword);
     await userRepository.update(id, { password: hashedPassword });
   },
 };

@@ -3,6 +3,7 @@ import express, { Application, NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 import swaggerUi from 'swagger-ui-express';
+import { env } from './config/env';
 import { logger } from './config/logger';
 import { swaggerSpec } from './config/swagger';
 import { errorHandler, notFoundHandler } from './middlewares/error.middleware';
@@ -11,7 +12,7 @@ import routes from './routes';
 const app: Application = express();
 
 app.use(helmet());
-app.use(cors());
+app.use(cors({ origin: env.CORS_ORIGIN }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(pinoHttp({ logger }));

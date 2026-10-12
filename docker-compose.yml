@@ -1,0 +1,9 @@
+services:
+  app:
+    image: ghcr.io/kanzennn/mapid-study-case-be:latest
+    container_name: report-case-study-be
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env

@@ -63,18 +63,24 @@ export const userService = {
     return sanitizeUser(updated);
   },
 
-  async remove(id: string) {
+  async remove(id: string, requestedBy: string) {
+    if (id === requestedBy) {
+      throw new AppError('You cannot delete your own account', 400);
+    }
+
     const user = await userRepository.findById(id);
     if (!user) {
       throw new AppError('User not found', 404);
     }
 
-    if (user)
-
     await userRepository.delete(id);
   },
 
-  async setActiveStatus(id: string, isActive: boolean) {
+  async setActiveStatus(id: string, isActive: boolean, requestedBy: string) {
+    if (id === requestedBy) {
+      throw new AppError('You cannot change the active status of your own account', 400);
+    }
+
     const user = await userRepository.findById(id);
     if (!user) {
       throw new AppError('User not found', 404);

@@ -29,21 +29,29 @@ export const updateUser = catchAsync(
 
 export const deleteUser = catchAsync(
   async (req: Request<{ id: string }>, res: Response) => {
-    await userService.remove(req.params.id);
+    await userService.remove(req.params.id, req.userId as string);
     res.status(204).send();
   },
 );
 
 export const activateUser = catchAsync(
   async (req: Request<{ id: string }>, res: Response) => {
-    const user = await userService.setActiveStatus(req.params.id, true);
+    const user = await userService.setActiveStatus(
+      req.params.id,
+      true,
+      req.userId as string,
+    );
     sendSuccess(res, user);
   },
 );
 
 export const deactivateUser = catchAsync(
   async (req: Request<{ id: string }>, res: Response) => {
-    const user = await userService.setActiveStatus(req.params.id, false);
+    const user = await userService.setActiveStatus(
+      req.params.id,
+      false,
+      req.userId as string,
+    );
     sendSuccess(res, user);
   },
 );

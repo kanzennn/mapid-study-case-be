@@ -199,6 +199,12 @@ router.patch(
  *     responses:
  *       204:
  *         description: User deleted
+ *       400:
+ *         description: Cannot delete your own account
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       403:
  *         description: Forbidden, ADMIN role required
  *         content:
@@ -236,6 +242,12 @@ router.delete('/:id', validate({ params: userIdParamSchema }), deleteUser);
  *                 status: { type: string, example: success }
  *                 data:
  *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Cannot change the active status of your own account
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       403:
  *         description: Forbidden, ADMIN role required
  *         content:
@@ -273,6 +285,12 @@ router.patch('/:id/activate', validate({ params: userIdParamSchema }), activateU
  *                 status: { type: string, example: success }
  *                 data:
  *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Cannot change the active status of your own account
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       403:
  *         description: Forbidden, ADMIN role required
  *         content:

@@ -49,6 +49,17 @@ const options: swaggerJsdoc.Options = {
           properties: {
             name: { type: 'string', example: 'Jane Doe' },
             email: { type: 'string', format: 'email', example: 'jane@example.com' },
+            password: {
+              type: 'string',
+              format: 'password',
+              example: 'password123',
+              description: 'Optional. When provided, the user password is updated.',
+            },
+            role: {
+              type: 'string',
+              enum: ['ADMIN', 'APPROVER', 'REPORTER'],
+              description: 'Optional. When provided, the user role is updated.',
+            },
           },
         },
         ErrorResponse: {

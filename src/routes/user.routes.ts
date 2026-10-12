@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   activateUser,
+  createUser,
   deactivateUser,
   deleteUser,
   getAllUsers,
@@ -10,7 +11,7 @@ import {
 import { requireAuth } from '../middlewares/auth.middleware';
 import { requireRole } from '../middlewares/role.middleware';
 import { validate } from '../middlewares/validate.middleware';
-import { updateUserSchema, userIdParamSchema } from '../validations/user.validation';
+import { createUserSchema, updateUserSchema, userIdParamSchema } from '../validations/user.validation';
 
 const router = Router();
 
@@ -49,6 +50,56 @@ router.use(requireAuth, requireRole('ADMIN'));
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.get('/', getAllUsers);
+
+/**
+ * @openapi
+ * /users:
+ *   post:
+ *     tags: [Users]
+ *     summary: Create a new user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, email, password]
+ *             properties:
+ *               name: { type: string, example: Jane Doe }
+ *               email: { type: string, format: email, example: jane@example.com }
+ *               password: { type: string, format: password, example: password123 }
+ *               role: { type: string, enum: [ADMIN, APPROVER, REPORTER], example: REPORTER }
+ *     responses:
+ *       201:
+ *         description: User created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string, example: success }
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Forbidden, ADMIN role required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       409:
+ *         description: Email is already in use
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post('/', validate({ body: createUserSchema }), createUser);
 
 /**
  * @openapi

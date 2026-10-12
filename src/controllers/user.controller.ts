@@ -15,6 +15,11 @@ export const getUserById = catchAsync(
   },
 );
 
+export const createUser = catchAsync(async (req: Request, res: Response) => {
+  const user = await userService.create(req.body, req.userId as string);
+  sendSuccess(res, user, 201);
+});
+
 export const updateUser = catchAsync(
   async (req: Request<{ id: string }>, res: Response) => {
     const user = await userService.update(req.params.id, req.body);

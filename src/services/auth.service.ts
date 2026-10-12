@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { logger } from '../config/logger';
 import { userRepository } from '../repositories/user.repository';
 import { AppError } from '../utils/AppError';
 import { signToken } from '../utils/jwt';
@@ -21,12 +22,16 @@ export const authService = {
     );
 
     if (!user || !isValidPassword) {
+      logger.warn({ event: 'login_failed', email: input.email }, 'Login failed: invalid credentials');
       throw new AppError('Invalid email or password', 401);
     }
 
     if (!user.is_active) {
+      logger.warn({ event: 'login_failed', userId: user.id, reason: 'inactive' }, 'Login failed: account deactivated');
       throw new AppError('Your account has been deactivated', 401);
     }
+
+    logger.info({ event: 'login_success', userId: user.id }, 'Login succeeded');
 
     const token = signToken({ userId: user.id, role: user.role });
     return { user: sanitizeUser(user), token };

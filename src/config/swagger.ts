@@ -14,6 +14,10 @@ const options: swaggerJsdoc.Options = {
         url: `http://localhost:${env.PORT}/api/v1`,
         description: 'Local server',
       },
+      {
+        url: `https://api.report.studycase.kanzen.my.id/api/v1`,
+        description: 'Production server',
+      },
     ],
     components: {
       securitySchemes: {

@@ -20,7 +20,8 @@ model User {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  reports Report[] @relation("ReportsByReporter")
+  reports                 Report[]              @relation("ReportsByReporter")
+  report_status_histories ReportStatusHistory[] @relation("ReportDecisionsByApprover")
 
   @@map("users")
 }
@@ -41,10 +42,26 @@ model Report {
   reporter_id String
   reporter    User   @relation("ReportsByReporter", fields: [reporter_id], references: [id])
 
+  created_at              DateTime              @default(now())
+  updated_at              DateTime              @updatedAt
+  report_status_histories ReportStatusHistory[]
+
+  @@map("reports")
+}
+
+model ReportStatusHistory {
+  id        String        @id @default(uuid())
+  report_id String
+  report    Report        @relation(fields: [report_id], references: [id])
+  status    REPORT_STATUS
+
+  approver_id String
+  approver    User   @relation("ReportDecisionsByApprover", fields: [approver_id], references: [id])
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  @@map("reports")
+  @@map("report_status_histories")
 }
 
 enum REPORT_STATUS {

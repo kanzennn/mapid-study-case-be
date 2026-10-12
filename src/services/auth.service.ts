@@ -7,15 +7,20 @@ import { LoginInput, UpdatePasswordInput, UpdateProfileInput } from '../validati
 
 const SALT_ROUNDS = 10;
 
+// Precomputed bcrypt hash with no corresponding real password, used to keep
+// login response time constant whether or not the email exists.
+const DUMMY_PASSWORD_HASH = '$2b$10$1D75USUk0rQB57AcEJ0aXeToxQxc.w9oWyDT5FgFbQOfZlecE6CC.';
+
 export const authService = {
   async login(input: LoginInput) {
     const user = await userRepository.findByEmail(input.email);
-    if (!user) {
-      throw new AppError('Invalid email or password', 401);
-    }
 
-    const isValidPassword = await bcrypt.compare(input.password, user.password);
-    if (!isValidPassword) {
+    const isValidPassword = await bcrypt.compare(
+      input.password,
+      user?.password ?? DUMMY_PASSWORD_HASH,
+    );
+
+    if (!user || !isValidPassword) {
       throw new AppError('Invalid email or password', 401);
     }
 

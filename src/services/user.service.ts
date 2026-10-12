@@ -37,7 +37,11 @@ export const userService = {
     return sanitizeUser(user);
   },
 
-  async update(id: string, input: UpdateUserInput) {
+  async update(id: string, input: UpdateUserInput, requestedBy: string) {
+    if (id === requestedBy && input.role) {
+      throw new AppError('You cannot change your own role', 400);
+    }
+
     const user = await userRepository.findById(id);
     if (!user) {
       throw new AppError('User not found', 404);

@@ -166,6 +166,12 @@ router.get('/:id', validate({ params: userIdParamSchema }), getUserById);
  *                 status: { type: string, example: success }
  *                 data:
  *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Cannot change your own role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       403:
  *         description: Forbidden, ADMIN role required
  *         content:

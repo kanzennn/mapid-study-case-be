@@ -15,7 +15,7 @@ export const userRepository = {
   },
 
   findAll(): Promise<User[]> {
-    return prisma.user.findMany({ orderBy: { createdAt: 'desc' } });
+    return prisma.user.findMany({ orderBy: { created_at: 'desc' } });
   },
 
   update(id: string, data: Prisma.UserUpdateInput): Promise<User> {

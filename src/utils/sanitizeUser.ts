@@ -6,5 +6,5 @@ export const sanitizeUser = (user: User) => ({
   email: user.email,
   role: user.role,
   is_active: user.is_active,
-  createdAt: user.createdAt,
+  created_at: user.created_at,
 });

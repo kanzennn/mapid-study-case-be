@@ -33,7 +33,7 @@ const options: swaggerJsdoc.Options = {
             role: { type: 'string', enum: ['ADMIN', 'APPROVER', 'REPORTER'] },
             picture_url: { type: 'string', nullable: true },
             is_active: { type: 'boolean', example: true },
-            createdAt: { type: 'string', format: 'date-time' },
+            created_at: { type: 'string', format: 'date-time' },
           },
         },
         LoginRequest: {

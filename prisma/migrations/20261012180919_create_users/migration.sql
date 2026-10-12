@@ -9,8 +9,10 @@ CREATE TABLE "users" (
     "password" TEXT NOT NULL,
     "role" "USER_ROLE" NOT NULL DEFAULT 'REPORTER',
     "picture_url" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "created_by" TEXT NOT NULL DEFAULT 'SYSTEM',
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );

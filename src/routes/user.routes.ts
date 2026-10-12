@@ -1,12 +1,20 @@
 import { Router } from 'express';
-import { deleteUser, getAllUsers, getUserById, updateUser } from '../controllers/user.controller';
+import {
+  activateUser,
+  deactivateUser,
+  deleteUser,
+  getAllUsers,
+  getUserById,
+  updateUser,
+} from '../controllers/user.controller';
 import { requireAuth } from '../middlewares/auth.middleware';
+import { requireRole } from '../middlewares/role.middleware';
 import { validate } from '../middlewares/validate.middleware';
 import { updateUserSchema, userIdParamSchema } from '../validations/user.validation';
 
 const router = Router();
 
-router.use(requireAuth);
+router.use(requireAuth, requireRole('ADMIN'));
 
 /**
  * @openapi
@@ -29,6 +37,12 @@ router.use(requireAuth);
  *                     $ref: '#/components/schemas/User'
  *       401:
  *         description: Authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Forbidden, ADMIN role required
  *         content:
  *           application/json:
  *             schema:
@@ -58,6 +72,12 @@ router.get('/', getAllUsers);
  *                 status: { type: string, example: success }
  *                 data:
  *                   $ref: '#/components/schemas/User'
+ *       403:
+ *         description: Forbidden, ADMIN role required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         description: User not found
  *         content:
@@ -95,6 +115,12 @@ router.get('/:id', validate({ params: userIdParamSchema }), getUserById);
  *                 status: { type: string, example: success }
  *                 data:
  *                   $ref: '#/components/schemas/User'
+ *       403:
+ *         description: Forbidden, ADMIN role required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         description: User not found
  *         content:
@@ -122,6 +148,12 @@ router.patch(
  *     responses:
  *       204:
  *         description: User deleted
+ *       403:
+ *         description: Forbidden, ADMIN role required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         description: User not found
  *         content:
@@ -130,5 +162,79 @@ router.patch(
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.delete('/:id', validate({ params: userIdParamSchema }), deleteUser);
+
+/**
+ * @openapi
+ * /users/{id}/activate:
+ *   patch:
+ *     tags: [Users]
+ *     summary: Activate a user by id
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: User activated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string, example: success }
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       403:
+ *         description: Forbidden, ADMIN role required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.patch('/:id/activate', validate({ params: userIdParamSchema }), activateUser);
+
+/**
+ * @openapi
+ * /users/{id}/deactivate:
+ *   patch:
+ *     tags: [Users]
+ *     summary: Deactivate a user by id
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: User deactivated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string, example: success }
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       403:
+ *         description: Forbidden, ADMIN role required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.patch('/:id/deactivate', validate({ params: userIdParamSchema }), deactivateUser);
 
 export default router;

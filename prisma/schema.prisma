@@ -13,6 +13,7 @@ model User {
   password    String
   role        USER_ROLE @default(REPORTER)
   picture_url String?
+  is_active   Boolean   @default(true)
 
   created_by String @default("SYSTEM")
 

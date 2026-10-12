@@ -1,8 +1,10 @@
+import { USER_ROLE } from '@prisma/client';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { env } from '../config/env';
 
 export interface JwtPayload {
   userId: string;
+  role: USER_ROLE;
 }
 
 export const signToken = (payload: JwtPayload): string => {

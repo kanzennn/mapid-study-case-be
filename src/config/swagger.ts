@@ -32,6 +32,7 @@ const options: swaggerJsdoc.Options = {
             email: { type: 'string', format: 'email', example: 'jane@example.com' },
             role: { type: 'string', enum: ['ADMIN', 'APPROVER', 'REPORTER'] },
             picture_url: { type: 'string', nullable: true },
+            is_active: { type: 'boolean', example: true },
             createdAt: { type: 'string', format: 'date-time' },
           },
         },

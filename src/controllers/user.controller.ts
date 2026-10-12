@@ -28,3 +28,17 @@ export const deleteUser = catchAsync(
     res.status(204).send();
   },
 );
+
+export const activateUser = catchAsync(
+  async (req: Request<{ id: string }>, res: Response) => {
+    const user = await userService.setActiveStatus(req.params.id, true);
+    sendSuccess(res, user);
+  },
+);
+
+export const deactivateUser = catchAsync(
+  async (req: Request<{ id: string }>, res: Response) => {
+    const user = await userService.setActiveStatus(req.params.id, false);
+    sendSuccess(res, user);
+  },
+);

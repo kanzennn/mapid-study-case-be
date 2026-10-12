@@ -2,13 +2,8 @@ import bcrypt from 'bcrypt';
 import { userRepository } from '../repositories/user.repository';
 import { AppError } from '../utils/AppError';
 import { signToken } from '../utils/jwt';
+import { sanitizeUser } from '../utils/sanitizeUser';
 import { LoginInput } from '../validations/auth.validation';
-
-const sanitizeUser = (user: { id: string; name: string; email: string }) => ({
-  id: user.id,
-  name: user.name,
-  email: user.email,
-});
 
 export const authService = {
   async login(input: LoginInput) {
@@ -22,7 +17,11 @@ export const authService = {
       throw new AppError('Invalid email or password', 401);
     }
 
-    const token = signToken({ userId: user.id });
+    if (!user.is_active) {
+      throw new AppError('Your account has been deactivated', 401);
+    }
+
+    const token = signToken({ userId: user.id, role: user.role });
     return { user: sanitizeUser(user), token };
   },
 };

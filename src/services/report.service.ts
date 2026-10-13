@@ -1,17 +1,40 @@
 import { REPORT_STATUS, USER_ROLE } from '@prisma/client';
-import { reportRepository } from '../repositories/report.repository';
+import {
+  buildReportListQuery,
+  reportRepository,
+} from '../repositories/report.repository';
 import { AppError } from '../utils/AppError';
-import { CreateReportInput, UpdateReportInput } from '../validations/report.validation';
+import { buildPaginationMeta } from '../utils/prismaQuery';
+import {
+  CreateReportInput,
+  ListReportsQuery,
+  UpdateReportInput,
+} from '../validations/report.validation';
 
 interface ReportActor {
   id: string;
   role: USER_ROLE;
 }
 
+// Reporters only ever see their own reports, whatever reporter_id they send.
+const scopeToActor = <T extends { reporter_id?: string }>(query: T, actor: ReportActor): T =>
+  actor.role === USER_ROLE.REPORTER ? { ...query, reporter_id: actor.id } : query;
+
 export const reportService = {
-  async getAll(actor: ReportActor) {
-    const where = actor.role === USER_ROLE.REPORTER ? { reporter_id: actor.id } : undefined;
-    return reportRepository.findAll(where);
+  async getAll(actor: ReportActor, query: ListReportsQuery = {}) {
+    const listQuery = buildReportListQuery(scopeToActor(query, actor));
+    const [reports, total] = await Promise.all([
+      reportRepository.findMany(listQuery),
+      listQuery.pagination ? reportRepository.count(listQuery.where) : undefined,
+    ]);
+
+    return {
+      reports,
+      meta:
+        listQuery.pagination && total !== undefined
+          ? buildPaginationMeta(total, listQuery.pagination)
+          : undefined,
+    };
   },
 
   async getById(id: string, actor: ReportActor) {

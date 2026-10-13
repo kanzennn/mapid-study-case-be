@@ -3,13 +3,18 @@ import { Request, Response } from 'express';
 import { reportService } from '../services/report.service';
 import { catchAsync } from '../utils/catchAsync';
 import { sendSuccess } from '../utils/response';
-import { ListReportsQuery } from '../validations/report.validation';
+import { ListReportsQuery, ReportStatsQuery } from '../validations/report.validation';
 
 const actorOf = (req: Request) => ({ id: req.userId as string, role: req.userRole as USER_ROLE });
 
 export const getAllReports = catchAsync(async (req: Request, res: Response) => {
   const { reports, meta } = await reportService.getAll(actorOf(req), req.query as ListReportsQuery);
   sendSuccess(res, reports, 200, meta);
+});
+
+export const getReportStats = catchAsync(async (req: Request, res: Response) => {
+  const stats = await reportService.getStats(actorOf(req), req.query as ReportStatsQuery);
+  sendSuccess(res, stats);
 });
 
 export const getReportById = catchAsync(

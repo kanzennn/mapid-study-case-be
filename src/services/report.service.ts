@@ -1,6 +1,7 @@
 import { REPORT_STATUS, USER_ROLE } from '@prisma/client';
 import {
   buildReportListQuery,
+  buildReportWhere,
   reportRepository,
 } from '../repositories/report.repository';
 import { AppError } from '../utils/AppError';
@@ -8,6 +9,7 @@ import { buildPaginationMeta } from '../utils/prismaQuery';
 import {
   CreateReportInput,
   ListReportsQuery,
+  ReportStatsQuery,
   UpdateReportInput,
 } from '../validations/report.validation';
 
@@ -34,6 +36,20 @@ export const reportService = {
         listQuery.pagination && total !== undefined
           ? buildPaginationMeta(total, listQuery.pagination)
           : undefined,
+    };
+  },
+
+  async getStats(actor: ReportActor, query: ReportStatsQuery = {}) {
+    const groups = await reportRepository.countByStatus(buildReportWhere(scopeToActor(query, actor)));
+    const byStatus = Object.fromEntries(
+      Object.values(REPORT_STATUS).map((status) => [status, 0]),
+    ) as Record<REPORT_STATUS, number>;
+
+    for (const group of groups) byStatus[group.status] = group._count._all;
+
+    return {
+      total: Object.values(byStatus).reduce((sum, count) => sum + count, 0),
+      ...byStatus,
     };
   },
 

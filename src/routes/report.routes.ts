@@ -5,6 +5,7 @@ import {
   deleteReport,
   getAllReports,
   getReportById,
+  getReportStats,
   rejectReport,
   updateReport,
 } from '../controllers/report.controller';
@@ -15,6 +16,7 @@ import {
   createReportSchema,
   listReportsQuerySchema,
   reportIdParamSchema,
+  reportStatsQuerySchema,
   updateReportSchema,
 } from '../validations/report.validation';
 
@@ -85,6 +87,49 @@ router.get(
   requireRole('REPORTER', 'APPROVER'),
   validate({ query: listReportsQuerySchema }),
   getAllReports,
+);
+
+/**
+ * @openapi
+ * /reports/stats:
+ *   get:
+ *     tags: [Reports]
+ *     summary: Report counts per status, using the same filters as the list (except status)
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema: { type: string }
+ *       - in: query
+ *         name: reporter_id
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: created_from
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: created_to
+ *         schema: { type: string, format: date }
+ *     responses:
+ *       200:
+ *         description: Counts per status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string, example: success }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     total: { type: integer, example: 7 }
+ *                     PENDING: { type: integer, example: 3 }
+ *                     APPROVED: { type: integer, example: 3 }
+ *                     REJECTED: { type: integer, example: 1 }
+ */
+router.get(
+  '/stats',
+  requireRole('REPORTER', 'APPROVER'),
+  validate({ query: reportStatsQuerySchema }),
+  getReportStats,
 );
 
 router.get(

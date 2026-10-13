@@ -9,7 +9,7 @@ import {
   compact,
   Pagination,
 } from '../utils/prismaQuery';
-import { ListReportsQuery } from '../validations/report.validation';
+import { ListReportsQuery, ReportStatsQuery } from '../validations/report.validation';
 
 export interface ReportListQuery {
   where: Prisma.ReportWhereInput;
@@ -17,7 +17,10 @@ export interface ReportListQuery {
   pagination: Pagination | null;
 }
 
-const buildReportWhere = (query: ListReportsQuery): Prisma.ReportWhereInput => {
+// Shared by the list and the stats endpoint.
+export const buildReportWhere = (
+  query: ReportStatsQuery & Pick<ListReportsQuery, 'status'>,
+): Prisma.ReportWhereInput => {
   const search = buildSearch(query.search, ['title', 'description'] as const);
   const reporterSearch = buildSearch(query.search, ['name', 'email'] as const);
 
@@ -112,6 +115,10 @@ export const reportRepository = {
 
   count(where: Prisma.ReportWhereInput): Promise<number> {
     return prisma.report.count({ where });
+  },
+
+  countByStatus(where: Prisma.ReportWhereInput) {
+    return prisma.report.groupBy({ by: ['status'], where, _count: { _all: true } });
   },
 
   update(id: string, data: Prisma.ReportUpdateInput): Promise<Report> {

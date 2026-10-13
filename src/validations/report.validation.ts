@@ -43,6 +43,17 @@ export const listReportsQuerySchema = z
   })
   .refine(validDateRange, dateRangeIssue);
 
+// Same filters as the list minus status (stats are grouped by it), sort and pagination.
+export const reportStatsQuerySchema = z
+  .object({
+    search: reportFilterShape.search,
+    reporter_id: reportFilterShape.reporter_id,
+    created_from: reportFilterShape.created_from,
+    created_to: reportFilterShape.created_to,
+  })
+  .refine(validDateRange, dateRangeIssue);
+
 export type CreateReportInput = z.infer<typeof createReportSchema>;
 export type UpdateReportInput = z.infer<typeof updateReportSchema>;
 export type ListReportsQuery = z.infer<typeof listReportsQuerySchema>;
+export type ReportStatsQuery = z.infer<typeof reportStatsQuerySchema>;

@@ -11,7 +11,12 @@ import {
 import { requireAuth } from '../middlewares/auth.middleware';
 import { requireRole } from '../middlewares/role.middleware';
 import { validate } from '../middlewares/validate.middleware';
-import { createUserSchema, updateUserSchema, userIdParamSchema } from '../validations/user.validation';
+import {
+  createUserSchema,
+  listUsersQuerySchema,
+  updateUserSchema,
+  userIdParamSchema,
+} from '../validations/user.validation';
 
 const router = Router();
 
@@ -22,10 +27,42 @@ router.use(requireAuth, requireRole('ADMIN'));
  * /users:
  *   get:
  *     tags: [Users]
- *     summary: Get all users
+ *     summary: Get all users (with search, filter, sort & optional pagination)
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         description: Case-insensitive match on name or email
+ *         schema: { type: string, example: reporter }
+ *       - in: query
+ *         name: role
+ *         description: One or more roles, comma separated (or repeat the param)
+ *         schema: { type: string, example: 'REPORTER,APPROVER' }
+ *       - in: query
+ *         name: is_active
+ *         schema: { type: boolean }
+ *       - in: query
+ *         name: created_from
+ *         description: Inclusive lower bound. Date-only values are read as UTC; send a full ISO date-time with offset (e.g. 2026-10-13T00:00:00+07:00) for local time.
+ *         schema: { type: string, format: date, example: '2026-10-01' }
+ *       - in: query
+ *         name: created_to
+ *         description: Inclusive upper bound. A date without time covers the whole day.
+ *         schema: { type: string, format: date, example: '2026-10-31' }
+ *       - in: query
+ *         name: sort
+ *         description: Comma separated fields, prefix with `-` for descending. Allowed - name, email, role, is_active, created_at, updated_at. Default `-created_at`.
+ *         schema: { type: string, example: '-created_at,name' }
+ *       - in: query
+ *         name: page
+ *         description: Enables pagination when `page` or `limit` is sent
+ *         schema: { type: integer, minimum: 1, example: 1 }
+ *       - in: query
+ *         name: limit
+ *         description: Items per page (default 10, max 100)
+ *         schema: { type: integer, minimum: 1, maximum: 100, example: 10 }
  *     responses:
  *       200:
- *         description: List of users
+ *         description: List of users. `meta` is only present when paginated.
  *         content:
  *           application/json:
  *             schema:
@@ -36,6 +73,14 @@ router.use(requireAuth, requireRole('ADMIN'));
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/User'
+ *                 meta:
+ *                   $ref: '#/components/schemas/PaginationMeta'
+ *       400:
+ *         description: Invalid query parameter
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       401:
  *         description: Authentication required
  *         content:
@@ -49,7 +94,7 @@ router.use(requireAuth, requireRole('ADMIN'));
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/', getAllUsers);
+router.get('/', validate({ query: listUsersQuerySchema }), getAllUsers);
 
 /**
  * @openapi

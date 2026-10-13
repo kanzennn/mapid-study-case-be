@@ -2,10 +2,11 @@ import { Request, Response } from 'express';
 import { userService } from '../services/user.service';
 import { catchAsync } from '../utils/catchAsync';
 import { sendSuccess } from '../utils/response';
+import { ListUsersQuery } from '../validations/user.validation';
 
-export const getAllUsers = catchAsync(async (_req: Request, res: Response) => {
-  const users = await userService.getAll();
-  sendSuccess(res, users);
+export const getAllUsers = catchAsync(async (req: Request, res: Response) => {
+  const { users, meta } = await userService.getAll(req.query as ListUsersQuery);
+  sendSuccess(res, users, 200, meta);
 });
 
 export const getUserById = catchAsync(

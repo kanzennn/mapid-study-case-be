@@ -1,5 +1,33 @@
 import { Prisma, User } from '@prisma/client';
 import { prisma } from '../config/prisma';
+import {
+  buildDateRange,
+  buildIn,
+  buildOrderBy,
+  buildPagination,
+  buildSearch,
+  compact,
+  Pagination,
+} from '../utils/prismaQuery';
+import { ListUsersQuery } from '../validations/user.validation';
+
+export interface UserListQuery {
+  where: Prisma.UserWhereInput;
+  orderBy: Prisma.UserOrderByWithRelationInput[];
+  pagination: Pagination | null;
+}
+
+export const buildUserListQuery = (query: ListUsersQuery): UserListQuery => ({
+  where: compact({
+    ...buildSearch(query.search, ['name', 'email'] as const),
+    role: buildIn(query.role),
+    is_active: query.is_active,
+    created_at: buildDateRange(query.created_from, query.created_to),
+  }),
+  // `id` as a tie-breaker keeps the order stable across pages.
+  orderBy: [...buildOrderBy(query.sort, [{ field: 'created_at', direction: 'desc' }]), { id: 'asc' }],
+  pagination: buildPagination(query),
+});
 
 export const userRepository = {
   create(data: Prisma.UserCreateInput): Promise<User> {
@@ -14,8 +42,16 @@ export const userRepository = {
     return prisma.user.findUnique({ where: { email } });
   },
 
-  findAll(): Promise<User[]> {
-    return prisma.user.findMany({ orderBy: { created_at: 'desc' } });
+  findMany({ where, orderBy, pagination }: UserListQuery): Promise<User[]> {
+    return prisma.user.findMany({
+      where,
+      orderBy,
+      ...(pagination ? { skip: pagination.skip, take: pagination.take } : {}),
+    });
+  },
+
+  count(where: Prisma.UserWhereInput): Promise<number> {
+    return prisma.user.count({ where });
   },
 
   update(id: string, data: Prisma.UserUpdateInput): Promise<User> {

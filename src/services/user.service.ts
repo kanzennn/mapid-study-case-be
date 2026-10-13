@@ -1,13 +1,25 @@
-import { userRepository } from '../repositories/user.repository';
+import { buildUserListQuery, userRepository } from '../repositories/user.repository';
 import { AppError } from '../utils/AppError';
 import { hashPassword } from '../utils/password';
+import { buildPaginationMeta } from '../utils/prismaQuery';
 import { sanitizeUser } from '../utils/sanitizeUser';
-import { CreateUserInput, UpdateUserInput } from '../validations/user.validation';
+import { CreateUserInput, ListUsersQuery, UpdateUserInput } from '../validations/user.validation';
 
 export const userService = {
-  async getAll() {
-    const users = await userRepository.findAll();
-    return users.map(sanitizeUser);
+  async getAll(query: ListUsersQuery = {}) {
+    const listQuery = buildUserListQuery(query);
+    const [users, total] = await Promise.all([
+      userRepository.findMany(listQuery),
+      listQuery.pagination ? userRepository.count(listQuery.where) : undefined,
+    ]);
+
+    return {
+      users: users.map(sanitizeUser),
+      meta:
+        listQuery.pagination && total !== undefined
+          ? buildPaginationMeta(total, listQuery.pagination)
+          : undefined,
+    };
   },
 
   async create(input: CreateUserInput, createdBy: string) {

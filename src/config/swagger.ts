@@ -66,6 +66,15 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
+        PaginationMeta: {
+          type: 'object',
+          properties: {
+            page: { type: 'integer', example: 1 },
+            limit: { type: 'integer', example: 10 },
+            total: { type: 'integer', example: 42 },
+            total_pages: { type: 'integer', example: 5 },
+          },
+        },
         ErrorResponse: {
           type: 'object',
           properties: {
